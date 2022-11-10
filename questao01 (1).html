@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questao 01</title>
+</head>
+
+<body>
+    <div class="main">
+        <form>
+		
+		
+            <header>
+                <h1> Selecione um partido </h1>
+            </header>
+			
+			<! – Select para exibir os partidos –>
+            <select id="select_partidos">
+                <option>Carregando...</option>
+            </select>
+        </form>
+
+		<! – Lista para exibir os deputados correspondentes ao partido selecionado –>
+        <ul id="lista_deputados">
+        </ul>
+    </div>
+
+
+    <script>
+		// Seleciona os elementos do html correspondentes ao SELECT e à LISTA
+        const select = document.getElementById('select_partidos');
+        const lista_deputados = document.getElementById('lista_deputados');
+
+		// URL das duas páginas com os dados dos partidos
+        let url = "https://dadosabertos.camara.leg.br/api/v2/partidos";
+        let url2 = "https://dadosabertos.camara.leg.br/api/v2/partidos?pagina=2&itens=15";
+        
+		// Variáveis para guardar os dados dos partidos carregados das duas páginas
+		let data;
+        let data2;
+		
+		// Carregando as duas páginas com dados dos partidos em JSON
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let partidos1 = data.dados;
+                let partidos2 = null;
+                let partidos = null;
+               
+                fetch(url2)
+                .then(response => response.json())
+                .then(data2 => {
+                    partidos2 = data2.dados;
+
+                    partidos = [...partidos1, ...partidos2];
+                    select.innerHTML = "";
+                    partidos.map(p => {
+                        
+						// criando uma OPTION para cada partido encontrado
+                        let option = document.createElement('option');
+
+						// extraindo a SIGLA e o ID de cada partido
+                        let sigla = p.sigla;
+                        let id = p.id;
+
+						// carregando a SIGLA e o ID do partido na option criada
+                        option.innerHTML = sigla;
+                        option.id = id;
+
+						// incluindo a OPTION no SELECT para listar cada partido encontrado
+                        select.appendChild(option);
+                    });
+                
+                });
+
+
+            });
+
+		// verificando o partido selecionado no SELECT
+        select.addEventListener('change', (e) => {
+            let options = select.options
+            let index = select.selectedIndex;
+            let partido_id = options[index].id;
+
+			// URL da página com os dados dos deputados, filtrando pelo ID do partido
+            let url_deputados = url + '/' + partido_id + '/membros';
+
+			// criando lista para carregar os deputados
+            lista_deputados.innerHTML = "";
+            
+			// carregando os deputados do partido em JSON
+			fetch(url_deputados)
+                .then(response => response.json())
+                .then(data => {
+                    let deputados = data.dados;
+
+                    deputados.map(d => {
+                        //criando um elemento de lista para cada deputado
+                        let li_dep = document.createElement('li');
+
+						// guardando o nome e id de cada deputado
+                        let nome = d.nome;
+                        let id = d.id;
+
+						// carregando o nome e o ID do deputado no elemento de lista criado
+                        li_dep.innerHTML = nome;
+                        li_dep.id = id;
+						
+						// incluindo o deputado na lista
+                        lista_deputados.appendChild(li_dep);
+                    })
+                });
+
+        })
+    </script>
+</body>
+</html>
